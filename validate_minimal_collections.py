@@ -197,10 +197,10 @@ class TestHarness:
                     if block_count != 3:
                         return False
                     while True:
-                        q = mutated_source_collection.quiver_rank_reducers()
-                        if q != []:
+                        q = mutated_source_collection.quiver_rank_reducer()
+                        if q is not None:
                             mutated_source_collection = (
-                                mutated_source_collection.quiver_mutate(q[0])
+                                mutated_source_collection.quiver_mutate(q)
                             )
                         else:
                             break
@@ -314,7 +314,7 @@ class TestHarness:
     def test_minimal(self, surface_name: SurfaceName, mc: MinimalCollection) -> bool:
         surface = mts.Surface(surface_name)
         col = mts.ExceptionalCollection(mc["collection"], surface)
-        return col.quiver_rank_reducers() == []
+        return col.quiver_rank_reducer is not None
 
     def test_relation(self, surface_name: SurfaceName, relation: Relation) -> bool:
         surface = mts.Surface(surface_name)

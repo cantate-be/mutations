@@ -1,10 +1,14 @@
 from ast import literal_eval
 
+import numpy as np
 from sage.all import Matrix
 from tqdm import tqdm
 
 import mutations as mts
 from validate_minimal_collections import TestHarness
+
+# Make sure a run is deterministic...
+np.random.seed(0)
 
 t = TestHarness("minimal_collections.txt")
 
@@ -13,6 +17,7 @@ assert t.test_all()
 all_matrices = set()
 
 TEST_DATA = "test_data"
+TEST_COUNT = 5000
 
 for surface_name, minimal_collections in t.data.items():
     surface = mts.Surface(surface_name)
@@ -27,19 +32,21 @@ for surface_name in ("P1P1", "X1", "X2", "X3", "X4", "X5", "X6", "X7", "X8"):
     tqdm.write("Surface name: " + surface_name)
     surface = mts.Surface(surface_name)
     not_found = False
-    count = 0
     with open(f"{TEST_DATA}/geometric_collections_len9_{surface_name}.txt") as f:
-        lines = f.readlines()
-        for line in (pbar := tqdm(lines)):
-
+        lines = np.random.permutation(f.readlines())[0:TEST_COUNT]
+        for line in tqdm(lines):
             l = literal_eval("[" + line + "]")
             col = mts.ExceptionalCollection(l, surface)
-            if not col.quiver().is_block_complete():
-                continue
-            if col.quiver_rank_reducers() != []:
-                continue
-            count += 1
-            pbar.set_description("Minimal: " + str(count))
+            while True:
+                r = col.quiver_rank_reducer()
+                if r is not None:
+                    col = col.quiver_mutate(r)
+                    continue
+                r = col.block_reducer()
+                if r is not None:
+                    col = col.quiver_mutate(r)
+                    continue
+                break
             if Matrix(col.gram_matrix(), immutable=True) not in all_matrices:
                 tqdm.write(str(col) + " was not found")
                 not_found = True

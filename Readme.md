@@ -18,10 +18,10 @@ If this is the case then two additional required Python packages should be insta
 using the command:
 
 ```sh
-sage --python -m pip install -r requirements.txt --upgrade
+sage_cmd --python -m pip install -r requirements.txt --upgrade
 ```
 
-where here and below `sage` stands for the command that invokes `SageMath`.
+where here and below `sage_cmd` stands for the command that invokes `SageMath`.
 
 ## Internal consistency of the table
 
@@ -32,7 +32,7 @@ Verifying the internal consistency of this file can be done with the
 command:
 
 ```sh
-sage validate_minimal_collections.py
+sage_cmd validate_minimal_collections.py
 ```
 
 The following checks are performed:
@@ -62,7 +62,7 @@ The following checks are performed:
 The script
 
 ```sh
-sage 4blocks_case_1.py
+sage_cmd 4blocks_case_1.py
 ```
 
 implements the algorithm 13.5.1 in the paper. It finishes
@@ -73,7 +73,7 @@ instantaneously and prints out two Gram matrices.
 The script
 
 ```sh
-sage 4blocks_case_2.py
+sage_cmd 4blocks_case_2.py
 ```
 
 implements the algorithm 13.5.2 in the paper. It finishes
@@ -84,7 +84,7 @@ instantaneously and prints out seven Gram matrices.
 The script
 
 ```sh
-sage 5blocks_case_2.py
+sage_cmd 5blocks_case_2.py
 ```
 
 implements the algorithm 13.6.2 in the paper. It takes about
@@ -95,14 +95,14 @@ meaning that no solutions were found (as expected).
 ## Testing
 
 The directory `test_data` contains data files with lists of very
-strong exceptional collections, which we use for our own testing.
+strong exceptional collections. We use these for our own research.
 
 The script
 
 ```
-sage testing.py
+sage_cmd testing.py
 ```
 
-verifies that the Gram matrices of the minimal block complete
-exceptional collections in these files are indeed contained
-in the table. Note that this script takes a long time to run.
+applies the algorithm in the proof of Theorem 11.2 to samples
+of exceptional collections extracted from these files and checks
+that the resulting minimal block-complete collections are in the table.

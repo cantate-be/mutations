@@ -566,6 +566,54 @@ class ExceptionalCollection:
         s += [s[0] + int(self.S.Ksquare)]
         return sum([s[i] != s[i + 1] for i in range(0, len(self))])
 
+    def blocks(self) -> list[list[int]]:
+        N = len(self)
+        helix = Helix(self)
+        current = 0
+        if helix[current - 1].slope == helix[current].slope:
+            current -= 1
+
+        blocks = []
+        current_block = []
+        for i in range(current, current + len(self)):
+            current_block.append(i % N)
+            if helix[i].slope == helix[i + 1].slope:
+                continue
+            blocks.append(current_block)
+            current_block = []
+        return blocks
+
+    def block_reducer(self) -> None | int:
+        """
+        Returns i such that quiver_mutate(i)
+        reduces the length of the shortest long edge
+        which occurs in a parallel pair. Returns None
+        if self is block complete.
+        """
+        base_block_count = self.count_blocks()
+        blocks = self.blocks()
+        for b in blocks:
+            if len(b) == 1:
+                m = b[0] if b[0] > 0 else len(self)
+                new_col = self.quiver_mutate(m)
+                if new_col.count_blocks() < base_block_count:
+                    return m
+        min_block_length = None
+        min_block = None
+        for b in blocks:
+            if len(b) == 1:
+                continue
+            if min_block_length is not None and len(b) > min_block_length:
+                continue
+            new_col = self.quiver_mutate(b[0] + 1)
+            if new_col.count_blocks() > base_block_count:
+                continue
+            min_block_length = len(b)
+            min_block = b
+        if min_block is not None:
+            return min_block[0] if min_block[0] > 0 else len(self)
+        return None
+
     def gram_matrix(self) -> Any:
         N = len(self)
         M = Matrix(ZZ, N, N)
@@ -712,6 +760,16 @@ class ExceptionalCollection:
         else:
             return self.quiver_mutate_right(-i)
 
+    def quiver_rank_reducer(self) -> None | int:
+        N = len(self)
+        me = self.make_ranks_positive()
+        base_sum = me.rank_sum()
+        for i in range(1, N + 1):
+            new = me.quiver_mutate(i)
+            if new.rank_sum() < base_sum:
+                return i
+        return None
+
     def quiver_rank_reducers(self) -> list[int]:
         N = len(self)
         me = self.make_ranks_positive()
@@ -784,13 +842,13 @@ class ExceptionalCollection:
     def __hash__(self) -> int:
         if self.__hash is not None:
             return self.__hash
-        self.__hash = hash(self.objects)
+        self.__hash = hash((self.S, self.objects))
         return self.__hash
 
     def __eq__(self, other: object, /) -> bool:
         if not isinstance(other, self.__class__):
             return False
-        return self.objects == other.objects
+        return (self.S, self.objects) == (self.S, other.objects)
 
     def __len__(self) -> int:
         return len(self.objects)
@@ -804,15 +862,21 @@ class ExceptionalCollection:
 class Helix:
 
     col: ExceptionalCollection
+    __computed_cols: dict[int, ExceptionalObject]
 
     def __init__(self, col: ExceptionalCollection):
         self.col = col
+        self.__computed_cols = {}
 
     def __getitem__(self, i: int, /) -> ExceptionalObject:
         """
         Returns the object with index n in the helix generated
         by self.
         """
+        if i in self.__computed_cols:
+            return self.__computed_cols[i]
         N = len(self.col)
         q, r = divmod(i, N)
-        return self.col.objects[r].twist_by_Kinv(q)
+        ret = self.col.objects[r].twist_by_Kinv(q)
+        self.__computed_cols[i] = ret
+        return ret
