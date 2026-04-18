@@ -103,6 +103,6 @@ The script
 sage_cmd testing.py
 ```
 
-applies the algorithm in the proof of Theorem 11.2 to samples
+applies a variant of the algorithm in the proof of Theorem 11.2 to samples
 of exceptional collections extracted from these files and checks
 that the resulting minimal block-complete collections are in the table.

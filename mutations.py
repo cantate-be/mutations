@@ -590,28 +590,36 @@ class ExceptionalCollection:
         which occurs in a parallel pair. Returns None
         if self is block complete.
         """
-        base_block_count = self.count_blocks()
-        blocks = self.blocks()
+        me = self.make_ranks_positive()
+        base_block_count = me.count_blocks()
+        base_rank = me.rank_sum()
+        blocks = me.blocks()
         for b in blocks:
             if len(b) == 1:
-                m = b[0] if b[0] > 0 else len(self)
-                new_col = self.quiver_mutate(m)
-                if new_col.count_blocks() < base_block_count:
+                m = b[0] if b[0] > 0 else len(me)
+                new_col = me.quiver_mutate(m)
+                if (
+                    new_col.count_blocks() < base_block_count
+                    and new_col.rank_sum() <= base_rank
+                ):
                     return m
         min_block_length = None
         min_block = None
         for b in blocks:
             if len(b) == 1:
                 continue
-            if min_block_length is not None and len(b) > min_block_length:
+            if min_block_length is not None and len(b) >= min_block_length:
                 continue
-            new_col = self.quiver_mutate(b[0] + 1)
+            m = b[0] if b[0] > 0 else len(me)
+            new_col = me.quiver_mutate(m)
+            if new_col.rank_sum() > base_rank:
+                continue
             if new_col.count_blocks() > base_block_count:
                 continue
             min_block_length = len(b)
             min_block = b
         if min_block is not None:
-            return min_block[0] if min_block[0] > 0 else len(self)
+            return min_block[0] if min_block[0] > 0 else len(me)
         return None
 
     def gram_matrix(self) -> Any:

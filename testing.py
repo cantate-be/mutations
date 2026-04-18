@@ -43,15 +43,12 @@ for surface_name in ("P1P1", "X1", "X2", "X3", "X4", "X5", "X6", "X7", "X8"):
             l = literal_eval("[" + line + "]")
             col = mts.ExceptionalCollection(l, surface)
             while True:
-                r = col.quiver_rank_reducer()
-                if r is not None:
+                while (r := col.quiver_rank_reducer()) is not None:
                     col = col.quiver_mutate(r)
-                    continue
-                r = col.block_reducer()
-                if r is not None:
+                if (r := col.block_reducer()) is not None:
                     col = col.quiver_mutate(r)
-                    continue
-                break
+                else:
+                    break
             M = Matrix(col.gram_matrix(), immutable=True)
             if M not in all_matrices:
                 tqdm.write(str(col) + " was not found")
