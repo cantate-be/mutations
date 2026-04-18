@@ -159,9 +159,7 @@ class Surface:
         gm = Matrix(ZZ, self.K0rk - 2, self.K0rk - 2)
         gm[1, 0] = 1
         gm[0, 1] = 1
-        gram = Matrix(ZZ, gm)
-        self.Pic = IntegralLattice(gram)
-
+        self.Pic = IntegralLattice(gm)
         self.K = self.Pic((-2, -2))
         self.Kinv = -self.K
         self.Ksquare = dot(self.K, self.K)
@@ -178,9 +176,7 @@ class Surface:
         gm[0, 0] = 1
         for i in range(1, self.K0rk - 2):
             gm[i, i] = -1
-        gram = Matrix(ZZ, gm)
-        self.Pic = IntegralLattice(gram)
-
+        self.Pic = IntegralLattice(gm)
         self.K = self.Pic((-3,) + n * (1,))
         self.Kinv = -self.K
         self.Ksquare = dot(self.K, self.K)
